@@ -247,6 +247,7 @@ class Emilator(llilvisitor.LLILVisitor):
             data = struct.pack(pack_fmt, data)
 
         self._memory.write(addr, data)
+        return length
 
     def execute_instruction(self):
         # Execute the current IL instruction
@@ -256,6 +257,8 @@ class Emilator(llilvisitor.LLILVisitor):
         self.instr_index += 1
 
         self.visit(instruction)
+
+        return instruction
 
     def run(self):
         while True:
