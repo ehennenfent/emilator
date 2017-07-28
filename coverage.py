@@ -20,3 +20,29 @@ def test_coverage(emi, verbose=False):
         for inst in uncovered:
             print("    {}".format(inst.name))
     print "Emilator covers {0}/{1} non-SSA LLIL instructions".format(len(covered), len(covered) + len(uncovered))
+    return covered, uncovered
+
+function_template = """
+def visit_{op}(self, expr):
+{args}    return None"""
+
+def generate_uncovered_instruction_templates(emi):
+    _, uncovered = test_coverage(emi, verbose=True)
+
+    for op in uncovered:
+        insert = ""
+        args = ops[op]
+        for arg in args:
+            insert += "    {0} = self.visit(expr.{0})\n".format(arg[0])
+
+        print function_template.format(op=op.name, args=insert)
+
+
+if __name__ == '__main__':
+    from binaryninja import LowLevelILFunction, Architecture
+    from emilator import Emilator
+
+    il = LowLevelILFunction(Architecture['x86_64'])
+    emi = Emilator(il)
+
+    generate_uncovered_instruction_templates(emi)
