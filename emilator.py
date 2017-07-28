@@ -2,13 +2,14 @@ import struct
 
 from binaryninja import (
     BinaryView, LowLevelILFunction, SegmentFlag, LLIL_REG_IS_TEMP,
-    Architecture, LLIL_GET_TEMP_REG_INDEX, ILRegister
+    Architecture, LLIL_GET_TEMP_REG_INDEX, ILRegister, Endianness
 )
 
 import errors
 import memory
 import llilvisitor
 import coverage
+from util import *
 
 fmt = {1: 'B', 2: 'H', 4: 'L', 8: 'Q'}
 
@@ -19,7 +20,7 @@ def sign_extend(value, bits):
 
 
 class Emilator(llilvisitor.LLILVisitor):
-    def __init__(self, function, view=None):
+    def __init__(self, function, view=None, stack_dir='down'):
         super(Emilator, self).__init__()
 
         if not isinstance(function, LowLevelILFunction):
@@ -41,6 +42,8 @@ class Emilator(llilvisitor.LLILVisitor):
                 segment.start, segment.length, segment.flags,
                 view.read(segment.start, segment.length)
             )
+
+        self._stack_grows_down = (stack_dir == 'down')
 
         self._function_hooks = {}
         self.instr_index = 0
@@ -64,6 +67,10 @@ class Emilator(llilvisitor.LLILVisitor):
     @property
     def instr_hooks(self):
         return dict(self._hooks)
+
+    @property
+    def stack_grows_down(self):
+        return self._stack_grows_down
 
     def map_memory(self,
                    start=None,
@@ -201,13 +208,13 @@ class Emilator(llilvisitor.LLILVisitor):
         # XXX: Handle sizes > 8 bytes
         pack_fmt = (
             # XXX: Endianness string bug
-            '<' if self._function.arch.endianness == 'LittleEndian'
+            '<' if self._function.arch.endianness == Endianness.LittleEndian
             else ''
         ) + fmt[length]
 
         if addr not in self._memory:
             raise errors.MemoryAccessError(
-                'Address {:x} is not valid.'.format(addr)
+                'Address 0x{:x} is not valid.'.format(addr)
             )
 
         try:
@@ -216,14 +223,14 @@ class Emilator(llilvisitor.LLILVisitor):
             )[0]
         except:
             raise errors.MemoryAccessError(
-                'Could not read memory at {:x}'.format(addr)
+                'Could not read memory at 0x{:x}'.format(addr)
             )
 
     def write_memory(self, addr, data, length=None):
         # XXX: This is terribly implemented
         if addr not in self._memory:
             raise errors.MemoryAccessError(
-                'Address {:x} is not valid.'.format(addr)
+                'Address 0x{:x} is not valid.'.format(addr)
             )
 
         if isinstance(data, (int, long)):
@@ -233,7 +240,7 @@ class Emilator(llilvisitor.LLILVisitor):
             # XXX: Handle sizes > 8 bytes
             pack_fmt = (
                 # XXX: Endianness string bug
-                '<' if self._function.arch.endianness == 'LittleEndian'
+                '<' if self._function.arch.endianness == Endianness.LittleEndian
                 else ''
             ) + fmt[length]
 
@@ -312,7 +319,10 @@ class Emilator(llilvisitor.LLILVisitor):
 
         self.write_memory(sp_value, value, expr.size)
 
-        sp_value += expr.size
+        if self.stack_grows_down:
+            sp_value -= expr.size
+        else:
+            sp_value += expr.size
 
         return self.set_register_value(sp, sp_value)
 
@@ -321,7 +331,10 @@ class Emilator(llilvisitor.LLILVisitor):
 
         sp_value = self.get_register_value(sp)
 
-        sp_value -= expr.size
+        if self.stack_grows_down:
+            sp_value += expr.size
+        else:
+            sp_value -= expr.size
 
         value = self.read_memory(sp_value, expr.size)
 
@@ -409,8 +422,7 @@ if __name__ == '__main__':
     emi.map_memory(0x1000, flags=SegmentFlag.SegmentReadable)
 
     print '[+] Initial Register State:'
-    for r, v in emi.registers.iteritems():
-        print '\t{}:\t{:x}'.format(r, v)
+    dump_registers(emi)
 
     il.append(il.push(8, il.const(8, 0xbadf00d)))
     il.append(il.push(8, il.const(8, 0x1000)))
@@ -426,5 +438,4 @@ if __name__ == '__main__':
         print '\tInstruction completed.'
 
     print '[+] Final Register State:'
-    for r, v in emi.registers.iteritems():
-        print '\t{}:\t{:x}'.format(r, v)
+    dump_registers(emi)
