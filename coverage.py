@@ -15,10 +15,10 @@ def test_coverage(emi, verbose=False):
     if verbose:
         print("Instructions covered:")
         for inst in covered:
-            print("    {}".format(inst.name))
+            print("\t{}".format(inst.name))
         print("Instructions missing:")
         for inst in uncovered:
-            print("    {}".format(inst.name))
+            print("\t{}".format(inst.name))
     print "Emilator covers {0}/{1} non-SSA LLIL instructions".format(len(covered), len(covered) + len(uncovered))
     return covered, uncovered
 
