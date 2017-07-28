@@ -8,6 +8,7 @@ from binaryninja import (
 import errors
 import memory
 import llilvisitor
+import coverage
 
 fmt = {1: 'B', 2: 'H', 4: 'L', 8: 'Q'}
 
@@ -91,7 +92,7 @@ class Emilator(llilvisitor.LLILVisitor):
     def set_register_value(self, register, value):
         # If it's a temp register, just set the value no matter what.
         # Maybe this will be an issue eventually, maybe not.
-        if (isinstance(register, (int, long)) and 
+        if (isinstance(register, (int, long)) and
                 LLIL_REG_IS_TEMP(register)):
             self._regs[register] = value
 
@@ -394,6 +395,7 @@ class Emilator(llilvisitor.LLILVisitor):
 if __name__ == '__main__':
     il = LowLevelILFunction(Architecture['x86_64'])
     emi = Emilator(il)
+    coverage.test_coverage(emi)
 
     emi.set_register_value('rbx', -1)
     emi.set_register_value('rsp', 0x1000)
