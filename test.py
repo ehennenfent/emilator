@@ -33,8 +33,8 @@ if __name__ == '__main__':
         print '{}\t{}'.format(il[i].instr_index, repr(il[i]))
 
     print '[+] Executing instructions...'
-    for i in emi.run():
-        print '\tInstruction completed.'
+    for count, i in enumerate(emi.run()):
+        print '\tInstruction {} completed'.format(count)
 
     print '[+] Final Register State:'
     for r, v in emi.registers.iteritems():

@@ -361,6 +361,11 @@ class Emilator(llilvisitor.LLILVisitor):
 
         return left + right
 
+    def visit_LLIL_SUB(self, expr):
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return left - right
+
     def visit_LLIL_AND(self, expr):
         left = self.visit(expr.left)
         right = self.visit(expr.right)
