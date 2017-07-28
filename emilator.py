@@ -359,6 +359,12 @@ class Emilator(llilvisitor.LLILVisitor):
 
         return condition
 
+    def visit_LLIL_JUMP(self, expr):
+        # XXX: Identify differences between LLIL_JUMP and LLIL_GOTO
+        dest = self.visit(expr.dest)
+        self.instr_index = dest
+        return self.instr_index
+
     def visit_LLIL_CMP_NE(self, expr):
         left = self.visit(expr.left)
         right = self.visit(expr.right)
@@ -391,6 +397,14 @@ class Emilator(llilvisitor.LLILVisitor):
         left = self.visit(expr.left)
         right = self.visit(expr.right)
         return left | right
+
+    def visit_LLIL_XOR(self, expr):
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return left | right
+
+    def visit_LLIL_NOP(self, expr):
+        return ""
 
     def visit_LLIL_RET(self, expr):
         # we'll stop for now, but this will need to retrieve the return
