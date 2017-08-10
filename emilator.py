@@ -413,6 +413,11 @@ class Emilator(llilvisitor.LLILVisitor):
         src = self.visit(expr.src)
         return src
 
+    def visit_LLIL_SX(self, expr):
+        ### TODO: Figure out if this actually needs to be changed
+        src = self.visit(expr.src)
+        return src
+
     def visit_LLIL_NOP(self, expr):
         return ""
 
@@ -450,6 +455,26 @@ class Emilator(llilvisitor.LLILVisitor):
         left = self.visit(expr.left)
         right = self.visit(expr.right)
         return left > right
+
+    def visit_LLIL_CMP_ULT(self, expr):
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return unsignify(left) < unsignify(right)
+
+    def visit_LLIL_CMP_ULE(self, expr):
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return unsignify(left) <= unsignify(right)
+
+    def visit_LLIL_CMP_UGE(self, expr):
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return unsignify(left) >= unsignify(right)
+
+    def visit_LLIL_CMP_UGT(self, expr):
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return unsignify(left) > unsignify(right)
 
     def visit_LLIL_FLAG(self, expr):
         src = expr.src.name
