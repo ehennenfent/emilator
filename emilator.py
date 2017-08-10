@@ -201,10 +201,10 @@ class Emilator(llilvisitor.LLILVisitor):
         return reg_value
 
     def set_flag_value(self, flag, value):
-        pass
+        self._flags[flag] = value
 
     def get_flag_value(self, flag):
-        pass
+        return self._flags[flag]
 
     def read_memory(self, addr, length):
         if length not in fmt:
@@ -301,7 +301,7 @@ class Emilator(llilvisitor.LLILVisitor):
         return self.set_register_value(expr.dest, value)
 
     def visit_LLIL_CONST(self, expr):
-        return expr.constant
+        return expr.value.value
 
     def visit_LLIL_CONST_PTR(self, expr):
         return expr.constant
@@ -409,6 +409,10 @@ class Emilator(llilvisitor.LLILVisitor):
         right = self.visit(expr.right)
         return left | right
 
+    def visit_LLIL_ZX(self, expr):
+        src = self.visit(expr.src)
+        return src
+
     def visit_LLIL_NOP(self, expr):
         return ""
 
@@ -418,6 +422,38 @@ class Emilator(llilvisitor.LLILVisitor):
         # raise StopIteration
         self.instr_index, self._function = self.call_stack[-1]
         self._call_stack = self.call_stack[:-1]
+
+    def visit_LLIL_SET_FLAG(self, expr):
+        dest = expr.dest.name
+        src = self.visit(expr.src)
+
+        self.set_flag_value(dest, src)
+
+        return src
+
+    def visit_LLIL_CMP_SLT(self, expr):
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return left < right
+
+    def visit_LLIL_CMP_SLE(self, expr):
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return left <= right
+
+    def visit_LLIL_CMP_SGE(self, expr):
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return left >= right
+
+    def visit_LLIL_CMP_SGT(self, expr):
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return left > right
+
+    def visit_LLIL_FLAG(self, expr):
+        src = expr.src.name
+        return self.get_flag_value(src)
 
     def visit_LLIL_CALL(self, expr):
         target = self.visit(expr.dest)
