@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     print '[+] Executing instructions...'
     for i in emi.run():
-        print '\tInstruction {} completed'.format(i.instr_index)
+        print '\tInstruction {} completed: {} -- {}'.format(i.instr_index, i, i.operation.name)
 
     print '[+] Final Register State:'
     dump_registers(emi)

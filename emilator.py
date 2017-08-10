@@ -44,6 +44,7 @@ class Emilator(llilvisitor.LLILVisitor):
             )
 
         self._stack_grows_down = (stack_dir == 'down')
+        self._call_stack = []
 
         self._function_hooks = {}
         self.instr_index = 0
@@ -71,6 +72,10 @@ class Emilator(llilvisitor.LLILVisitor):
     @property
     def stack_grows_down(self):
         return self._stack_grows_down
+
+    @property
+    def call_stack(self):
+        return self._call_stack
 
     def map_memory(self,
                    start=None,
@@ -363,6 +368,7 @@ class Emilator(llilvisitor.LLILVisitor):
         # XXX: Identify differences between LLIL_JUMP and LLIL_GOTO
         dest = self.visit(expr.dest)
         self.instr_index = dest
+        print(self.instr_index)
         return self.instr_index
 
     def visit_LLIL_CMP_NE(self, expr):
@@ -409,7 +415,9 @@ class Emilator(llilvisitor.LLILVisitor):
     def visit_LLIL_RET(self, expr):
         # we'll stop for now, but this will need to retrieve the return
         # address and jump to it.
-        raise StopIteration
+        # raise StopIteration
+        self.instr_index, self._function = self.call_stack[-1]
+        self._call_stack = self.call_stack[:-1]
 
     def visit_LLIL_CALL(self, expr):
         target = self.visit(expr.dest)
@@ -420,6 +428,8 @@ class Emilator(llilvisitor.LLILVisitor):
             self._view.create_user_function(target)
             self._view.update_analysis_and_wait()
             target_function = self._view.get_function_at(target)
+
+        self.call_stack.append( (self.instr_index + 1, self._function) )
 
         self._function = target_function.low_level_il
         self.instr_index = 0
