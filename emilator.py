@@ -11,6 +11,8 @@ import llilvisitor
 import coverage
 from util import *
 
+import sys
+
 fmt = {1: 'B', 2: 'H', 4: 'L', 8: 'Q'}
 
 
@@ -421,13 +423,6 @@ class Emilator(llilvisitor.LLILVisitor):
     def visit_LLIL_NOP(self, expr):
         return ""
 
-    def visit_LLIL_RET(self, expr):
-        # we'll stop for now, but this will need to retrieve the return
-        # address and jump to it.
-        # raise StopIteration
-        self.instr_index, self._function = self.call_stack[-1]
-        self._call_stack = self.call_stack[:-1]
-
     def visit_LLIL_SET_FLAG(self, expr):
         dest = expr.dest.name
         src = self.visit(expr.src)
@@ -477,13 +472,13 @@ class Emilator(llilvisitor.LLILVisitor):
         return unsignify(left) > unsignify(right)
 
     def visit_LLIL_LSL(self, expr):
-        #TODO: Figure out which one of these is wrong 
+        #TODO: Figure out which one of these is wrong
         left = self.visit(expr.left)
         right = self.visit(expr.right)
         return left << right
 
     def visit_LLIL_LSR(self, expr):
-        #TODO: Figure out which one of these is wrong 
+        #TODO: Figure out which one of these is wrong
         left = self.visit(expr.left)
         right = self.visit(expr.right)
         return left << right
@@ -498,6 +493,7 @@ class Emilator(llilvisitor.LLILVisitor):
         return self.get_flag_value(src)
 
     def visit_LLIL_CALL(self, expr):
+        #TODO: Update for platform-independence once calling convention provides the means to do so
         target = self.visit(expr.dest)
 
         target_function = self._view.get_function_at(target)
@@ -513,6 +509,39 @@ class Emilator(llilvisitor.LLILVisitor):
         self.instr_index = 0
 
         return True
+
+    def visit_LLIL_RET(self, expr):
+        #TODO: Update for platform-independence once calling convention provides the means to do so
+        self.instr_index, self._function = self.call_stack[-1]
+        self._call_stack = self.call_stack[:-1]
+
+        return True
+
+    def visit_LLIL_SYSCALL(self, expr):
+        print("Warning: Skipping {}".format(sys._getframe().f_code.co_name))
+        return 0
+
+    def visit_LLIL_BP(self, expr):
+        print("Warning: Skipping {}".format(sys._getframe().f_code.co_name))
+        return 0
+
+    def visit_LLIL_TRAP(self, expr):
+        print("Warning: Skipping {}".format(sys._getframe().f_code.co_name))
+        vector = self.visit(expr.vector)
+        return 0
+
+    def visit_LLIL_UNDEF(self, expr):
+        print("Warning: Skipping {}".format(sys._getframe().f_code.co_name))
+        return 0
+
+    def visit_LLIL_UNIMPL(self, expr):
+        print("Warning: Skipping {}".format(sys._getframe().f_code.co_name))
+        return 0
+
+    def visit_LLIL_UNIMPL_MEM(self, expr):
+        src = self.visit(expr.src)
+        print("Warning: Skipping {}".format(sys._getframe().f_code.co_name))
+        return 0
 
 
 if __name__ == '__main__':
