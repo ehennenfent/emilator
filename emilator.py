@@ -476,6 +476,23 @@ class Emilator(llilvisitor.LLILVisitor):
         right = self.visit(expr.right)
         return unsignify(left) > unsignify(right)
 
+    def visit_LLIL_LSL(self, expr):
+        #TODO: Figure out which one of these is wrong 
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return left << right
+
+    def visit_LLIL_LSR(self, expr):
+        #TODO: Figure out which one of these is wrong 
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return left << right
+
+    def visit_LLIL_ASR(self, expr):
+        left = self.visit(expr.left)
+        right = self.visit(expr.right)
+        return left >> right
+
     def visit_LLIL_FLAG(self, expr):
         src = expr.src.name
         return self.get_flag_value(src)
