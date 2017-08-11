@@ -13,9 +13,7 @@ def signify(val, length=32):
 
 def il_pprint(instruction, depth=0):
     if type(instruction) is list:
-        partial = ''
-        for idx, item in enumerate(instruction):
-            partial += '\n' + '\t'*(depth+1) + '{}: {}'.format(idx, il_pprint(item, depth+1))
+        partial = ''.join('\n' + '\t'*(depth+1) + '{}: {}'.format(idx, il_pprint(item, depth+1)) for idx, item in enumerate(instruction))
         out = '[]' if len(instruction) == 0 else '[{}'.format(partial) + '\n' + '\t'*depth + ']'
     elif type(instruction) not in [LowLevelILInstruction, MediumLevelILInstruction]:
         return '{} {}'.format(type(instruction).__name__, instruction)
