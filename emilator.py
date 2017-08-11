@@ -22,7 +22,7 @@ def sign_extend(value, bits):
 
 
 class Emilator(llilvisitor.LLILVisitor):
-    def __init__(self, function, view=None, stack_dir='down'):
+    def __init__(self, function, view=None):
         super(Emilator, self).__init__()
 
         if not isinstance(function, LowLevelILFunction):
@@ -45,7 +45,6 @@ class Emilator(llilvisitor.LLILVisitor):
                 view.read(segment.start, segment.length)
             )
 
-        self._stack_grows_down = (stack_dir == 'down')
         self._call_stack = []
 
         self._function_hooks = {}
@@ -70,10 +69,6 @@ class Emilator(llilvisitor.LLILVisitor):
     @property
     def instr_hooks(self):
         return dict(self._hooks)
-
-    @property
-    def stack_grows_down(self):
-        return self._stack_grows_down
 
     @property
     def call_stack(self):
@@ -321,6 +316,7 @@ class Emilator(llilvisitor.LLILVisitor):
         return self.write_memory(addr, value, expr.size)
 
     def visit_LLIL_PUSH(self, expr):
+        """ Only for platforms where the stack grows towards lower addresses """
         sp = self.function.arch.stack_pointer
 
         value = self.visit(expr.src)
@@ -329,22 +325,17 @@ class Emilator(llilvisitor.LLILVisitor):
 
         self.write_memory(sp_value, value, expr.size)
 
-        if self.stack_grows_down:
-            sp_value -= expr.size
-        else:
-            sp_value += expr.size
+        sp_value -= expr.size
 
         return self.set_register_value(sp, sp_value)
 
     def visit_LLIL_POP(self, expr):
+        """ Only for platforms where the stack grows towards lower addresses """
         sp = self.function.arch.stack_pointer
 
         sp_value = self.get_register_value(sp)
 
-        if self.stack_grows_down:
-            sp_value += expr.size
-        else:
-            sp_value -= expr.size
+        sp_value += expr.size
 
         value = self.read_memory(sp_value, expr.size)
 

@@ -10,7 +10,7 @@ if __name__ == '__main__':
         exit(1)
 
     bv = BinaryViewType.get_view_of_file(sys.argv[1])
-    main = bv.symbols['_start'].address
+    main = bv.symbols['main'].address
     main = bv.get_function_at(main)
 
     il = main.low_level_il
@@ -20,8 +20,8 @@ if __name__ == '__main__':
     for reg in sorted(bv.arch.full_width_regs):
         emi.set_register_value(reg, 0)
 
-    emi.set_register_value('rbp', 0x90000)
-    emi.set_register_value('rsp', 0x50000)
+    emi.set_register_value('rbp', 0xf0000)
+    emi.set_register_value('rsp', 0xf0000)
 
     print '[+] Mapping memory at 0x1000 (size: 0x1000)...'
     emi.map_memory(start=0x0, length=0x100000)
