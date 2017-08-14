@@ -8,6 +8,7 @@ from binaryninja import (
 import errors
 import memory
 import llilvisitor
+import debuggervisitor
 import coverage
 from util import *
 
@@ -21,7 +22,7 @@ def sign_extend(value, bits):
     return (value & (sign_bit - 1)) - (value & sign_bit)
 
 
-class Emilator(llilvisitor.LLILVisitor):
+class Emilator(debuggervisitor.DebuggerVisitor):
     def __init__(self, function, view=None):
         super(Emilator, self).__init__()
 
@@ -46,9 +47,8 @@ class Emilator(llilvisitor.LLILVisitor):
             )
 
         self._call_stack = []
-
+        self._stopped = False
         self._function_hooks = {}
-        self.instr_index = 0
 
     @property
     def function(self):
@@ -268,7 +268,8 @@ class Emilator(llilvisitor.LLILVisitor):
         return instruction
 
     def run(self):
-        while True:
+        self._stopped = False
+        while not self._stopped:
             try:
                 yield self.execute_instruction()
             except IndexError:
@@ -276,6 +277,9 @@ class Emilator(llilvisitor.LLILVisitor):
                     raise StopIteration()
                 else:
                     raise
+            except errors.BreakpointHit:
+                self._stopped = True
+                raise StopIteration()
 
     def _find_available_segment(self, size=0x1000, align=1):
         new_segment = None

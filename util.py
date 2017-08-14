@@ -28,3 +28,6 @@ def il_pprint(instruction, depth=0):
 
 def truncate(data, after=64):
     return str(data)[:after] + ('...' if len(str(data)) > after else '')
+
+def log_instruction(i):
+    print('{}:{} completed: {} -- {}'.format(i.function.source_function.name, i.instr_index, i, i.operation.name))

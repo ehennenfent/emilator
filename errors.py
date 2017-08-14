@@ -6,3 +6,6 @@ class MemoryAccessError(Exception):
 
 class UndefinedError(Exception):
     pass
+
+class BreakpointHit(Exception):
+    pass

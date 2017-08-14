@@ -17,10 +17,14 @@ def step_over(args):
     pass
 
 def step_in(args):
-    pass
+    log_instruction(emilator.execute_instruction())
 
 def breakpoint(args):
-    pass
+    if len(args) == 0:
+        print("Usage: breakpoint functionname:index")
+        return
+    lexed = args[0].split(':')
+    emilator.set_breakpoint(lexed[0],lexed[1])
 
 def continue_to(args):
     pass
@@ -38,7 +42,7 @@ def run(_args):
     emilator.map_memory(start=0x0, length=0x100000)
 
     for i in emilator.run():
-        print('{}:{} completed: {} -- {}'.format(i.function.source_function.name, i.instr_index, i, i.operation.name))
+        log_instruction(i)
 
 
 def kill(_args):
