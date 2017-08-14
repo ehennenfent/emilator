@@ -34,7 +34,14 @@ def kill(_args):
     pass
 
 def info(args):
-    pass
+    if len(args) == 0:
+        print("Usage: info [property]")
+        return
+    target = args[0]
+    if target in ['r', 'registers']:
+        dump_registers(emilator)
+    elif target in ['coverage']:
+        coverage.test_coverage(emilator, verbose=True)
 
 def load_binary(binary, _args):
     global emilator
@@ -46,4 +53,3 @@ def load_binary(binary, _args):
 
     llil = start.low_level_il
     emilator = Emilator(llil, view=bv)
-    coverage.test_coverage(emilator)
