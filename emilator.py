@@ -99,6 +99,11 @@ class Emilator(llilvisitor.LLILVisitor):
         pass
 
     def set_register_value(self, register, value):
+        try:
+            old = self.get_register_value(register)
+        except errors.UndefinedError:
+            old = 0
+        print("{}: 0x{:02x} --> 0x{:02x}".format(register, old, value))
         # If it's a temp register, just set the value no matter what.
         # Maybe this will be an issue eventually, maybe not.
         if (isinstance(register, (int, long)) and

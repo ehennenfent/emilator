@@ -25,3 +25,6 @@ def il_pprint(instruction, depth=0):
     if depth == 0:
         print(out)
     return out
+
+def truncate(data, after=64):
+    return str(data)[:after] + ('...' if len(str(data)) > after else '')

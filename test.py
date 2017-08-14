@@ -10,7 +10,7 @@ if __name__ == '__main__':
         exit(1)
 
     bv = BinaryViewType.get_view_of_file(sys.argv[1])
-    main = bv.symbols['main'].address
+    main = bv.symbols['_start'].address
     main = bv.get_function_at(main)
 
     il = main.low_level_il
