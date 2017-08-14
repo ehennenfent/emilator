@@ -1,4 +1,13 @@
 from __future__ import print_function
+from binaryninja import *
+from emilator import Emilator
+import coverage
+from util import *
+
+llil = None
+emilator = None
+
+is_running = False
 
 def exit_wrapper(_args):
     exit(0)
@@ -26,3 +35,15 @@ def kill(_args):
 
 def info(args):
     pass
+
+def load_binary(binary, _args):
+    global emilator
+    global llil
+
+    bv = BinaryViewType.get_view_of_file(binary)
+    start = bv.symbols['_start'].address
+    start = bv.get_function_at(start)
+
+    llil = start.low_level_il
+    emilator = Emilator(llil, view=bv)
+    coverage.test_coverage(emilator)

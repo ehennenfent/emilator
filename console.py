@@ -6,6 +6,7 @@ import traceback
 
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('binary', type=str, help='A binary or .bndb')
+parser.add_argument("arguments", help="arguments to pass to the binary (unsupported)", nargs="?")
 arguments = parser.parse_args()
 
 cmd_map = [
@@ -35,6 +36,7 @@ def dispatch(verb, args):
         print("No such command: {}".format(verb))
 
 if __name__ == '__main__':
+    load_binary(arguments.binary, arguments.arguments)
     cmd_completer = WordCompleter([cmd for item in cmd_map for cmd in item[0] if len(cmd) > 2])
     while(True):
         answer = prompt(u'(emILator) ', completer = cmd_completer)
