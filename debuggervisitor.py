@@ -10,7 +10,7 @@ class DebuggerVisitor(LLILVisitor):
         self._breakpoints = {}
 
     def visit(self, expression):
-        breakpoint = self._breakpoints.get(_make_token(expression.function.source_function.name, self.instr_index))
+        breakpoint = self._breakpoints.get(_make_token(expression.function.source_function.name, self.instr_index - 1))
 
         if breakpoint:
             self.instr_index -= 1
